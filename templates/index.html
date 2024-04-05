@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>heyy {{ name }}</h1>
+    <div class="styling">
+        <h1>Uploade CSV File</h1>
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".csv">
+                <button type="submit">Uploade</button>
+            </form>
+    </div>
 </body>
 </html>
