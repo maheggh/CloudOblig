@@ -1,4 +1,4 @@
-from lab8.__main__ import f
+from heyhey.__main__ import f
 
 
 def test_f():

@@ -1,5 +1,4 @@
-from lab8.file2 import *
-
+from heyhey.file2 import *
 
 def test_func2():
     assert func2(3, 4) == 7
