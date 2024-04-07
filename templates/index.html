@@ -8,11 +8,35 @@
 </head>
 <body>
     <div class="styling">
-        <h1>Uploade CSV File</h1>
-            <form action="/upload" method="post" enctype="multipart/form-data">
-                <input type="file" name="file" accept=".csv">
-                <button type="submit">Uploade</button>
-            </form>
+        <h1>Upload CSV</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="csvfile" accept=".csv">
+        <button type="submit">Upload</button>
+    </form>
     </div>
+    
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var csvFile = document.getElementById('csvFile').files[0];
+            var formData = new FormData();
+            formData.append('csv', csvFile);
+    
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'markdown_files.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+        });
+    </script>
 </body>
 </html>
