@@ -19,44 +19,42 @@ os.makedirs(ZIP_FOLDER, exist_ok=True)
 
 template_content = """
 # Certificate of Excellence
-Congratulations {FirstName} {LastName} on completing the course!
 
-As part of the course IDG2001 Cloud Technologies at NTNU, you demonstrated great skill and knowledge.
+![NTNU Logo](ntnu-logo.jpg)
+
+**{{FirstName}} {{LastName}}** have completed the course IDG2001 Cloud Technologies at the Norwegian University of Science and Technology (NTNU). As part of their course, they have demonstrated outstanding skills in Cloud Technologies, including PaaS, SaaS, and IaaS.
+
+- PaaS: Platform as a Service
+- SaaS: Software as a Service
+- IaaS: Infrastructure as a Service
+
+![Signature](signature.png)
+
+_Paul Knutson, Faculty of IE, NTNU_
 """
+
+def add_images_to_zip(zipf, image_directory, images):
+    for image in images:
+        image_path = os.path.join(image_directory, image)
+        if os.path.exists(image_path):
+            zipf.write(image_path, arcname=image)
+        else:
+            print(f"Warning: Image not found at {image_path}")
 
 async def process_csv(file_path: str, file_id: str) -> str:
     processed_files = []
-    # Read the CSV file content asynchronously
-    async with aiofiles.open(file_path, 'r', encoding='utf-8') as csvfile:
-        csv_content = await csvfile.read()
-
-    # Process the CSV content synchronously
-    reader = csv.DictReader(csv_content.splitlines())
-    for row in reader:
-        first_name = row.get('FirstName', '').strip()
-        last_name = row.get('LastName', '').strip()
-        if first_name and last_name:  # Ensure non-empty names
-            md_filename = f"{first_name}_{last_name}.md"
-            md_file_path = os.path.join(PROCESSED_FOLDER, md_filename)
-            markdown_content = template_content.format(**row)
-            # Write the markdown content synchronously for simplicity
-            with open(md_file_path, 'w', encoding='utf-8') as md_file:
-                md_file.write(markdown_content)
-            processed_files.append(md_file_path)
-            print(f"Processed: {md_file_path}")  # Debugging
-
-    # Ensure the ZIP file creation and file addition happen correctly
+    # Your existing logic to create and add .md files to processed_files
+    
     zip_filename = f"{file_id}.zip"
     zip_file_path = os.path.join(ZIP_FOLDER, zip_filename)
     with zipfile.ZipFile(zip_file_path, 'w') as zipf:
         for file in processed_files:
             zipf.write(file, os.path.basename(file))
-            print(f"Added to ZIP: {file}")  # Debugging
+        # Add images to ZIP
+        images_to_include = ['ntnu-logo.jpg', 'signature.png']
+        add_images_to_zip(zipf, 'static/images', images_to_include)
 
-    # Optional: Comment out for debugging
-    # for file in processed_files:
-    #     os.remove(file)
-
+    # Your existing cleanup logic
     return zip_file_path
 
 
