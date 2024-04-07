@@ -19,18 +19,9 @@ os.makedirs(ZIP_FOLDER, exist_ok=True)
 
 template_content = """
 # Certificate of Excellence
+Congratulations {FirstName} {LastName} on completing the course!
 
-![NTNU Logo](ntnu-logo.jpg)
-
-**{{FirstName}} {{LastName}}** have completed the course IDG2001 Cloud Technologies at the Norwegian University of Science and Technology (NTNU). As part of their course, they have demonstrated outstanding skills in Cloud Technologies, including PaaS, SaaS, and IaaS.
-
-- PaaS: Platform as a Service
-- SaaS: Software as a Service
-- IaaS: Infrastructure as a Service
-
-![Signature](signature.png)
-
-_Paul Knutson, Faculty of IE, NTNU_
+As part of the course IDG2001 Cloud Technologies at NTNU, you demonstrated great skill and knowledge.
 """
 
 async def process_csv(file_path: str, file_id: str) -> str:
@@ -60,11 +51,11 @@ async def process_csv(file_path: str, file_id: str) -> str:
     with zipfile.ZipFile(zip_file_path, 'w') as zipf:
         for file in processed_files:
             zipf.write(file, os.path.basename(file))
-        # Add specific images to the ZIP
-        images_to_include = ['ntnu-logo.jpg', 'signature.png']
-        for image in images_to_include:
-            image_path = os.path.join('static/images', image)  # Adjust as needed
-            zipf.write(image_path, arcname=os.path.join('images', image))  # Adjust the arcname as per your directory structure in ZIP
+            print(f"Added to ZIP: {file}")  # Debugging
+
+    # Optional: Comment out for debugging
+    # for file in processed_files:
+    #     os.remove(file)
 
     return zip_file_path
 
