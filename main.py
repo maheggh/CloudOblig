@@ -33,31 +33,28 @@ template_content = """
 _Paul Knutson, Faculty of IE, NTNU_
 """
 
-def add_images_to_zip(zipf, image_directory, images):
-    for image in images:
-        image_path = os.path.join(image_directory, image)
-        if os.path.exists(image_path):
-            zipf.write(image_path, arcname=image)
-        else:
-            print(f"Warning: Image not found at {image_path}")
-
 async def process_csv(file_path: str, file_id: str) -> str:
     processed_files = []
+    # Read the CSV file content asynchronously
     async with aiofiles.open(file_path, 'r', encoding='utf-8') as csvfile:
         csv_content = await csvfile.read()
-    
+
+    # Process the CSV content synchronously
     reader = csv.DictReader(csv_content.splitlines())
     for row in reader:
         first_name = row.get('FirstName', '').strip()
         last_name = row.get('LastName', '').strip()
-        if first_name and last_name:
+        if first_name and last_name:  # Ensure non-empty names
             md_filename = f"{first_name}_{last_name}.md"
             md_file_path = os.path.join(PROCESSED_FOLDER, md_filename)
             markdown_content = template_content.format(**row)
+            # Write the markdown content synchronously for simplicity
             with open(md_file_path, 'w', encoding='utf-8') as md_file:
                 md_file.write(markdown_content)
             processed_files.append(md_file_path)
+            print(f"Processed: {md_file_path}")  # Debugging
 
+    # Ensure the ZIP file creation and file addition happen correctly
     zip_filename = f"{file_id}.zip"
     zip_file_path = os.path.join(ZIP_FOLDER, zip_filename)
     with zipfile.ZipFile(zip_file_path, 'w') as zipf:
@@ -65,9 +62,12 @@ async def process_csv(file_path: str, file_id: str) -> str:
             zipf.write(file, os.path.basename(file))
         # Add specific images to the ZIP
         images_to_include = ['ntnu-logo.jpg', 'signature.png']
-        add_images_to_zip(zipf, STATIC_IMAGES_FOLDER, images_to_include)
+        for image in images_to_include:
+            image_path = os.path.join('static/images', image)  # Adjust as needed
+            zipf.write(image_path, arcname=os.path.join('images', image))  # Adjust the arcname as per your directory structure in ZIP
 
     return zip_file_path
+
 
 @app.post("/upload-csv/")
 async def upload_csv(file: UploadFile = File(...)):
