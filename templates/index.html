@@ -9,7 +9,7 @@
 <body>
     <div class="styling">
         <h1>Upload CSV File</h1>
-        <form id="uploadForm" enctype="multipart/form-data">
+        <form id="uploadForm" enctype="multipart/form-data" action="/upload-csv/" method="post">
             <input type="file" name="file" accept=".csv">
             <button type="submit">Upload</button>
         </form>
