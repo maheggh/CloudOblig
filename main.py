@@ -51,6 +51,23 @@ async def generate_markdown_files(csv_file_path: str, output_dir: str):
             async with aiofiles.open(md_file_path, 'w', encoding='utf-8') as md_file:
                 await md_file.write(markdown_content)
 
+# to test the connection to the mongodb
+@app.get("/test-db")
+async def test_db():
+    try:
+        # Try to fetch the first document from a collection
+        collection = db.test_collection  # Adjust 'test_collection' to your collection name
+        document = collection.find_one()
+        if document:
+            return {"status": "success", "data": document}
+        else:
+            # If no document found, insert a test document (optional)
+            collection.insert_one({"test": "This is a test document"})
+            return {"status": "success", "message": "Test document inserted"}
+    except Exception as e:
+        # If an error occurs, return an error message
+        return {"status": "error", "message": str(e)}
+
 @app.post("/upload-csv/")
 async def upload_csv(file: UploadFile = File(...)):
     if file.filename.endswith('.csv'):
