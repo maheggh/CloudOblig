@@ -1,17 +1,17 @@
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 import os
 import csv
 import aiofiles
 import zipfile
 from uuid import uuid4
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import FileResponse
 
 app = FastAPI()
 
 UPLOAD_FOLDER = 'uploaded_files'
 PROCESSED_FOLDER = 'processed_files'
 ZIP_FOLDER = 'zip_files'
-STATIC_IMAGES_FOLDER = 'static/images'  # Assuming this is your static images path
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
@@ -69,5 +69,29 @@ async def process_csv(file_path: str, file_id: str) -> str:
 
     return zip_file_path
 
+@app.post("/upload-csv/")
+async def upload_csv(file: UploadFile = File(...)):
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="Invalid file extension.")
+    
+    file_id = str(uuid4())
+    file_path = os.path.join(UPLOAD_FOLDER, f"{file_id}.csv")
+    
+    async with aiofiles.open(file_path, 'wb') as out_file:
+        content = await file.read()
+        await out_file.write(content)
+    
+    # Process the CSV file and create a ZIP archive
+    zip_file_path = await process_csv(file_path, file_id)
+    
+    # Return the ID for the zip file for downloading
+    return {"file_id": file_id}
+
+@app.get("/download-zip/{file_id}")
+async def download_zip(file_id: str):
+    zip_file_path = os.path.join(ZIP_FOLDER, f"{file_id}.zip")
+    if os.path.exists(zip_file_path):
+        return FileResponse(zip_file_path, media_type='application/zip', filename=f"{file_id}.zip")
+    raise HTTPException(status_code=404, detail="File not found")
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
