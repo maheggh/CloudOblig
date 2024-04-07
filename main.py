@@ -27,7 +27,11 @@ As part of the course IDG2001 Cloud Technologies at NTNU, you demonstrated great
 async def process_csv(file_path: str, file_id: str) -> str:
     processed_files = []
     async with aiofiles.open(file_path, 'r', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(await csvfile.read())
+        # Correctly read the CSV file asynchronously
+        content = await csvfile.read()
+        reader = csv.DictReader(content.splitlines())
+
+        for row in reader:
         for row in reader:
             first_name = row.get('FirstName', '')
             last_name = row.get('LastName', '')
