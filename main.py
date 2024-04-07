@@ -20,22 +20,23 @@ os.makedirs(ZIP_FOLDER, exist_ok=True)
 template_content = """
 # Certificate of Excellence
 Congratulations {FirstName} {LastName} on completing the course!
+![NTNU Logo](ntnu-logo.jpg) 
 
 As part of the course IDG2001 Cloud Technologies at NTNU, you demonstrated great skill and knowledge.
+![NTNU signature](signature.png) 
 """
+
 
 async def process_csv(file_path: str, file_id: str) -> str:
     processed_files = []
     async with aiofiles.open(file_path, 'r', encoding='utf-8') as csvfile:
-        # Correctly read the CSV file asynchronously
         content = await csvfile.read()
         reader = csv.DictReader(content.splitlines())
 
         for row in reader:
-        for row in reader:
             first_name = row.get('FirstName', '')
             last_name = row.get('LastName', '')
-            if first_name and last_name:  # Check if both first and last names are available
+            if first_name and last_name:
                 md_filename = f"{first_name}_{last_name}.md"
                 md_file_path = os.path.join(PROCESSED_FOLDER, md_filename)
                 markdown_content = template_content.format(**row)
@@ -43,18 +44,23 @@ async def process_csv(file_path: str, file_id: str) -> str:
                     await md_file.write(markdown_content)
                 processed_files.append(md_file_path)
     
-    # Create a zip file containing the processed files
     zip_filename = f"{file_id}.zip"
     zip_file_path = os.path.join(ZIP_FOLDER, zip_filename)
     with zipfile.ZipFile(zip_file_path, 'w') as zipf:
         for file in processed_files:
             zipf.write(file, os.path.basename(file))
+        # Specify the images you want to include in the ZIP
+        images = ['ntnu-logo.jpg']  # Add more images as needed
+        for image in images:
+            image_path = os.path.join('static/images', image)
+            zipf.write(image_path, arcname=os.path.join('images', image))
     
     # Optional cleanup of processed files
     for file in processed_files:
         os.remove(file)
 
     return zip_file_path
+
 
 @app.post("/upload-csv/")
 async def upload_csv(file: UploadFile = File(...)):
