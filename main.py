@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pymongo import MongoClient
 from dotenv import load_dotenv
@@ -8,6 +9,7 @@ import csv
 import aiofiles
 
 load_dotenv()
+
 app = FastAPI()
 
 MONGODB_URI = os.getenv('MONGODB_URI')
@@ -36,6 +38,9 @@ async def generate_markdown_files_and_insert_to_db(csv_file_path: str, output_di
         content = await csvfile.read()
         reader = csv.DictReader(content.splitlines())
         
+        # Reset the list for generated files
+        generated_files = []
+        
         for row in reader:
             # Insert contact into MongoDB
             db_collection.insert_one(row)
@@ -46,19 +51,28 @@ async def generate_markdown_files_and_insert_to_db(csv_file_path: str, output_di
             md_file_path = os.path.join(output_dir, md_filename)
             async with aiofiles.open(md_file_path, 'w', encoding='utf-8') as md_file:
                 await md_file.write(markdown_content)
+            
+            # Keep track of generated files
+            generated_files.append(md_file_path)
+            
+        return generated_files
 
 @app.post("/upload-csv/")
 async def upload_csv(file: UploadFile = File(...)):
-    if file.filename.endswith('.csv'):
-        file_location = os.path.join(UPLOAD_FOLDER, file.filename)
-        async with aiofiles.open(file_location, "wb+") as file_object:
-            content = await file.read()
-            await file_object.write(content)
-        
-        await generate_markdown_files_and_insert_to_db(file_location, PROCESSED_FOLDER, contacts_collection)
-        
-        return {"message": "CSV processed, Markdown files created, and data inserted into MongoDB."}
-    else:
+    if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Invalid file extension.")
+    
+    file_location = os.path.join(UPLOAD_FOLDER, file.filename)
+    async with aiofiles.open(file_location, "wb+") as file_object:
+        content = await file.read()
+        await file_object.write(content)
+    
+    generated_files = await generate_markdown_files_and_insert_to_db(file_location, PROCESSED_FOLDER, contacts_collection)
+    
+    # For simplicity, return the first processed file or adjust as needed
+    if generated_files:
+        return FileResponse(path=generated_files[0], filename=os.path.basename(generated_files[0]), media_type='text/markdown')
+    else:
+        return {"message": "No files processed."}
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
