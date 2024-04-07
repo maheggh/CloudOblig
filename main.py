@@ -1,10 +1,11 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import FileResponse
 from pymongo import MongoClient
 import os
 import certifi
 import csv
-from starlette.responses import JSONResponse
-import aiofiles  # You need to install this package for async file operations
+import aiofiles
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -57,3 +58,8 @@ async def upload_csv(file: UploadFile = File(...)):
 async def get_contacts():
     contacts = list(contacts_collection.find({}, {'_id': False}))  # Exclude the MongoDB id from the results
     return contacts
+
+# Serve static files (including index.html)
+app.mount("/static", StaticFiles(directory="assets"), name="static")
+
+#
