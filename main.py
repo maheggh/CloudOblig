@@ -11,8 +11,11 @@ app = FastAPI()
 # MongoDB setup using environment variables for security
 MONGODB_URI = os.getenv('MONGODB_URI')
 client = MongoClient(MONGODB_URI, tlsCAFile=certifi.where())
-db = client["test"]
-contacts_collection = db["test"]
+db = client["test"]  # Connect to the 'test' database
+contacts_collection = db["test"]  # Use the 'test' collection
+
+mydict = { "name": "John", "address": "Highway 37" }
+x = mycol.insert_one(mydict)
 
 UPLOAD_FOLDER = 'assets'
 PROCESSED_FOLDER = 'processed_files'
