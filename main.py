@@ -9,6 +9,7 @@ import aiofiles
 load_dotenv()
 app = FastAPI()
 
+
 # MongoDB setup using environment variables for security
 MONGODB_URI = os.getenv('MONGODB_URI')
 client = MongoClient(MONGODB_URI, tlsCAFile=certifi.where())
@@ -24,7 +25,7 @@ PROCESSED_FOLDER = 'processed_files'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+#app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
 template_content = """
 # Certificate of excellence
@@ -72,6 +73,9 @@ async def upload_csv(file: UploadFile = File(...)):
 
 # The download endpoint remains unchanged...
 
+@app.get("/hello")
+async def hello():
+    return {"message": "Hello World"}
 
 # Assume that the Markdown files have been converted to HTML or PDF and saved in PROCESSED_FOLDER
 @app.get("/download/{filename}")
