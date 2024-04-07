@@ -6,51 +6,41 @@ import os
 import certifi
 import csv
 import aiofiles
+
 load_dotenv()
 app = FastAPI()
 
-
-# MongoDB setup using environment variables for security
 MONGODB_URI = os.getenv('MONGODB_URI')
 client = MongoClient(MONGODB_URI, tlsCAFile=certifi.where())
-db = client["test"]  # Connect to the 'test' database
-contacts_collection = db["test"]  # Use the 'test' collection
-# test
-# print(MONGODB_URI)
-# mydict = { "name": "John", "address": "Highway 37" }
-# x = contacts_collection.insert_one(mydict)
+db = client["test"]  # Adjust as needed
+contacts_collection = db["test"]  # Adjust as needed
 
 UPLOAD_FOLDER = 'assets'
 PROCESSED_FOLDER = 'processed_files'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 
-#app.mount("/static", StaticFiles(directory="static", html=True), name="static")
-
 template_content = """
 # Certificate of excellence
-![NTNU-logo](/static/images/NTNU-logo.png)
+![NTNU-logo](NTNU-logo.png)
 {FirstName} {LastName} have completed the course IDG2001 Cloud Technologies at
 (NTNU). As part of their course, they have blabla skills, lists, etc.
 - SaaS, PaaS, IaaS
 - Cloud infrastructure ... etc
-![Signature](/static/images/signature.png)
+![Signature](signature.png)
 Paul Knutson, Faculty of IE, NTNU
 """
 
-async def insert_contacts_to_db(reader, db_collection):
-    for row in reader:
-        db_collection.insert_one(row)
-
-async def generate_markdown_files(csv_file_path: str, output_dir: str):
+async def generate_markdown_files_and_insert_to_db(csv_file_path: str, output_dir: str, db_collection):
     async with aiofiles.open(csv_file_path, mode='r', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(await csvfile.read().splitlines())
-        
-        # Inserting CSV data into MongoDB
-        await insert_contacts_to_db(reader, contacts_collection)
+        content = await csvfile.read()
+        reader = csv.DictReader(content.splitlines())
         
         for row in reader:
-            # You should replace placeholders here
+            # Insert contact into MongoDB
+            db_collection.insert_one(row)
+            
+            # Generate Markdown content
             markdown_content = template_content.format(**row)
             md_filename = f"{row['FirstName']}_{row['LastName']}.md"
             md_file_path = os.path.join(output_dir, md_filename)
@@ -64,23 +54,11 @@ async def upload_csv(file: UploadFile = File(...)):
         async with aiofiles.open(file_location, "wb+") as file_object:
             content = await file.read()
             await file_object.write(content)
-            
-        # Process the CSV file to create Markdown files and insert data into MongoDB
-        await generate_markdown_files(file_location, PROCESSED_FOLDER)
+        
+        await generate_markdown_files_and_insert_to_db(file_location, PROCESSED_FOLDER, contacts_collection)
         
         return {"message": "CSV processed, Markdown files created, and data inserted into MongoDB."}
-    raise HTTPException(status_code=400, detail="Invalid file extension.")
+    else:
+        raise HTTPException(status_code=400, detail="Invalid file extension.")
 
-# The download endpoint remains unchanged...
-
-@app.get("/hello")
-async def hello():
-    return {"message": "Hello World"}
-
-# Assume that the Markdown files have been converted to HTML or PDF and saved in PROCESSED_FOLDER
-@app.get("/download/{filename}")
-async def download_file(filename: str):
-    file_path = os.path.join(PROCESSED_FOLDER, filename)
-    if os.path.isfile(file_path):
-        return FileResponse(path=file_path, media_type='application/octet-stream', filename=filename)
-    raise HTTPException(status_code=404, detail="File not found.")
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
