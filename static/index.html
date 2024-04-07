@@ -25,7 +25,13 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('message').innerText = 'CSV processed and data inserted into MongoDB.';
+                // Assuming the response includes file_id which is used to download the zip
+                const fileID = data.file_id;
+                const downloadLink = `/download-zip/${fileID}`;
+                document.getElementById('message').innerText = 'CSV processed successfully. Your download will start shortly.';
+    
+                // Automatically trigger the download
+                window.location.href = downloadLink; 
             })
             .catch(error => {
                 document.getElementById('message').innerText = 'An error occurred.';
