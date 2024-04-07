@@ -42,7 +42,7 @@ async def upload_csv(file: UploadFile = File(...)):
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="File extension not allowed.")
     
-    file_location = os.path.join(UPLOAD_FOLDER, file.filename)
+    file_location = os.path.join('assets', file.filename)
     async with aiofiles.open(file_location, "wb+") as file_object:
         # Read content from UploadFile and write it asynchronously
         content = await file.read()
