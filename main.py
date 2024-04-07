@@ -1,13 +1,10 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pymongo import MongoClient
 import os
 import certifi
 import csv
 import aiofiles
-import shutil
-from starlette.responses import Response
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -15,24 +12,28 @@ app = FastAPI()
 # MongoDB setup using environment variables for security
 MONGODB_URI = os.getenv('MONGODB_URI')
 client = MongoClient(MONGODB_URI, tlsCAFile=certifi.where())
-db = client["test"]  # Use the test database
-contacts_collection = db["contacts"]  # Use the contacts collection
+db = client["test"]
+contacts_collection = db["contacts"]
 
 # Directories setup
-UPLOAD_FOLDER = 'uploaded_files'
+UPLOAD_FOLDER = 'assets'
 PROCESSED_FOLDER = 'processed_files'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the upload folder exists
-os.makedirs(PROCESSED_FOLDER, exist_ok=True)  # Ensure the processed folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 
-# Template content (would normally be loaded from a file)
+# Serve static files including index.html
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
+# The template content should be moved into an actual .md file inside 'assets' if it is static
+# Or generated dynamically within this function if it changes
 template_content = """
 # Certificate of excellence
-![NTNU-logo](NTNU-logo.png)
+![NTNU-logo](/static/images/NTNU-logo.png)
 {{FirstName}} {{LastName}} have completed the course IDG2001 Cloud Technologies at
 (NTNU). As part of their course, they have blabla skills, lists, etc.
 - SaaS, PaaS, IaaS
 - Cloud infrastructure ... etc
-![Signature](signature.png)
+![Signature](/static/images/signature.png)
 Paul Knutson, Faculty of IE, NTNU
 """
 
@@ -45,6 +46,7 @@ async def generate_markdown_files(csv_file_path: str, output_dir: str):
             md_file_path = os.path.join(output_dir, f"{row['FirstName']}_{row['LastName']}.md")
             async with aiofiles.open(md_file_path, 'w', encoding='utf-8') as md_file:
                 await md_file.write(markdown_content)
+                
     return [os.path.join(output_dir, f"{row['FirstName']}_{row['LastName']}.md") for row in reader]
 
 @app.post("/upload-csv/")
@@ -55,16 +57,14 @@ async def upload_csv(file: UploadFile = File(...)):
             content = await file.read()
             await file_object.write(content)
 
-        markdown_files = await generate_markdown_files(file_location, PROCESSED_FOLDER)
-        return {"message": "CSV processed and Markdown files created.", "files": markdown_files}
+        await generate_markdown_files(file_location, PROCESSED_FOLDER)
+        return {"message": "CSV processed and Markdown files created."}
     raise HTTPException(status_code=400, detail="Invalid file extension.")
 
-@app.get("/download-md/{filename}")
-async def download_md(filename: str):
+# Assume that the Markdown files have been converted to HTML or PDF and saved in PROCESSED_FOLDER
+@app.get("/download/{filename}")
+async def download_file(filename: str):
     file_path = os.path.join(PROCESSED_FOLDER, filename)
-    if os.path.exists(file_path):
-        return FileResponse(file_path, media_type='text/markdown', filename=filename)
+    if os.path.isfile(file_path):
+        return FileResponse(path=file_path, media_type='application/octet-stream', filename=filename)
     raise HTTPException(status_code=404, detail="File not found.")
-
-# Serve static files (e.g., index.html, CSS, JavaScript)
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
