@@ -3,16 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Upload CSV File</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <div class="styling">
         <h1>Upload CSV File</h1>
-            <form action="/" method="post" enctype="multipart/form-data">
-                <input type="file" name="file" accept=".csv">
-                <button type="submit">Upload</button>
-            </form>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".csv">
+            <button type="submit">Upload</button>
+        </form>
+        <div id="message"></div>
     </div>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            var formData = new FormData(this);
+            fetch('/upload-csv/', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').innerText = 'CSV processed and data inserted into MongoDB.';
+            })
+            .catch(error => {
+                document.getElementById('message').innerText = 'An error occurred.';
+                console.error('Error:', error);
+            });
+        });
+    </script>
 </body>
 </html>
