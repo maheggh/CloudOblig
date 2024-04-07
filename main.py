@@ -34,7 +34,6 @@ async def process_csv(file_path: str, file_id: str) -> str:
         reader = csv.DictReader(content.splitlines())
 
         for row in reader:
-        for row in reader:
             first_name = row.get('FirstName', '')
             last_name = row.get('LastName', '')
             if first_name and last_name:  # Check if both first and last names are available
