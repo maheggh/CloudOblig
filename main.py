@@ -12,7 +12,7 @@ app = FastAPI()
 MONGODB_URI = os.getenv('MONGODB_URI')
 client = MongoClient(MONGODB_URI, tlsCAFile=certifi.where())
 db = client["test"]
-contacts_collection = db["contacts"]
+contacts_collection = db["test"]
 
 UPLOAD_FOLDER = 'assets'
 PROCESSED_FOLDER = 'processed_files'
