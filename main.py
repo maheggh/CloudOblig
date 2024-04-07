@@ -1,11 +1,12 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pymongo import MongoClient
+from dotenv import load_dotenv
 import os
 import certifi
 import csv
 import aiofiles
-
+load_dotenv()
 app = FastAPI()
 
 # MongoDB setup using environment variables for security
@@ -13,9 +14,10 @@ MONGODB_URI = os.getenv('MONGODB_URI')
 client = MongoClient(MONGODB_URI, tlsCAFile=certifi.where())
 db = client["test"]  # Connect to the 'test' database
 contacts_collection = db["test"]  # Use the 'test' collection
-
-mydict = { "name": "John", "address": "Highway 37" }
-x = mycol.insert_one(mydict)
+# test
+# print(MONGODB_URI)
+# mydict = { "name": "John", "address": "Highway 37" }
+# x = contacts_collection.insert_one(mydict)
 
 UPLOAD_FOLDER = 'assets'
 PROCESSED_FOLDER = 'processed_files'
