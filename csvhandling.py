@@ -1,34 +1,39 @@
-import os
 import csv
-from jinja2 import Template
+import os
+from pymongo import MongoClient
+import certifi
 
-# Get the absolute path to the directory containing the script
+# MongoDB setup
+MONGODB_URI = os.getenv('MONGODB_URI', 'your_default_mongodb_uri_here')
+client = MongoClient(MONGODB_URI, tlsCAFile=certifi.where())
+db = client["test"]
+contacts_collection = db["contacts"]  
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
-assets_dir = os.path.join(script_dir, 'assets')
+assets_dir = os.path.join(script_dir, 'assets')  
+csv_path = os.path.join(assets_dir, 'personas.csv')  
 
-# Read the template file
-template_path = os.path.join(assets_dir, 'template.md')
-with open(template_path, 'r') as file:
-    template_str = file.read()
+def import_contacts_from_csv(csv_path: str):
+    """
+    Imports contacts from a CSV file into the MongoDB collection.
 
-# Create Jinja2 template object
-template = Template(template_str)
-
-# Path to CSV file
-csv_path = os.path.join(assets_dir, 'personas.csv')
-
-# Read names from CSV and generate Markdown files
-with open(csv_path, 'r', newline='') as csvfile:
-    reader = csv.DictReader(csvfile)
-    for row in reader:
-        # Fill in the template with values from CSV
-        filled_template = template.render(FirstName=row['FirstName'], LastName=row['LastName'])
+    :param csv_path: Path to the CSV file containing contacts.
+    """
+    with open(csv_path, mode='r', newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        contacts = [contact for contact in reader] 
         
-        # Generate filename (e.g., John_Doe.md)
-        filename = os.path.join(script_dir, f"{row['FirstName']}_{row['LastName']}.md")
-        
-        # Write filled template to Markdown file
-        with open(filename, 'w') as output_file:
-            output_file.write(filled_template)
+        for contact in contacts:
+            contact_document = {
+                "email": contact.get("Email", "").strip(),
+                "name": f"{contact.get('FirstName', '').strip()} {contact.get('LastName', '').strip()}",
+                "phone": contact.get("Phone", "--No Information--").strip(),
+                "address": contact.get("Address", "--No Information--").strip(),
+                "company": contact.get("Company", "--No Information--").strip()
+            }
+            result = contacts_collection.insert_one(contact_document)
+            print(f"Inserted: {result.inserted_id}")
 
-print("Markdown files generated successfully.")
+if __name__ == "__main__":
+    import_contacts_from_csv(csv_path)
+    print("Contacts imported successfully.")

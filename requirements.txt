@@ -1,2 +1,9 @@
-fastapi==0.100.0
-hypercorn==0.14.4
+Flask==2.0.3
+pymongo==3.12.1
+flask-cors==3.0.10
+certifi==2021.10.8
+vobject==0.9.6.1
+requests==2.26.0
+pytest==7.2
+pytest-flask==1.2.0
+flake8==6.0
