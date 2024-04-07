@@ -68,3 +68,6 @@ async def process_csv(file_path: str, file_id: str) -> str:
         add_images_to_zip(zipf, STATIC_IMAGES_FOLDER, images_to_include)
 
     return zip_file_path
+
+
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
