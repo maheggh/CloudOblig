@@ -1,0 +1,27 @@
+body{
+    background-color: #84a98c;
+}
+
+.styling{
+    background-color: #cad2c5;
+    width: 600px;
+    height: 250px;
+    border-radius: 15px;
+    border: 2px solid #52796f;
+    margin-left: 25%;
+}
+
+h1, form{
+    color: #2f3e46;
+}
+
+h1{
+    margin-top: 10%;
+    margin-left: 25%;
+}
+
+form{
+    margin-top: 10%;
+    overflow: hidden;
+    margin-left: 25%;
+}
