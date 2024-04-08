@@ -8,8 +8,13 @@ def process_csv(csv_filename):
     # Get the directory containing the CSV file
     csv_dir = os.path.dirname(csv_filename)
 
-    # Read the template file directly
-    template_path = os.path.join(csv_dir, 'template.md')
+    # Find any markdown file in the same directory as the CSV file
+    markdown_files = [f for f in os.listdir(csv_dir) if f.endswith('.md')]
+    if not markdown_files:
+        return "No markdown file found in the directory."
+
+    # Use the first markdown file found as the template
+    template_path = os.path.join(csv_dir, markdown_files[0])
     with open(template_path, 'r') as file:
         template_str = file.read()
 
@@ -31,7 +36,7 @@ def process_csv(csv_filename):
 
     print("Markdown files generated successfully.")
 
-    # Create a zip file containing only the generated Markdown files
+    # Create a zip file containing the generated Markdown files
     zip_file_path = os.path.join(csv_dir, 'output.zip')
     with zipfile.ZipFile(zip_file_path, 'w') as zipf:
         for root, dirs, files in os.walk(output_dir):
