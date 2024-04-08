@@ -5,12 +5,11 @@ import shutil
 import zipfile
 
 def process_csv(csv_filename):
-    # Get the absolute path to the directory containing the script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    assets_dir = os.path.join(script_dir, 'assets')
+    # Get the directory containing the CSV file
+    csv_dir = os.path.dirname(csv_filename)
 
-    # Read the template file
-    template_path = os.path.join(assets_dir, 'template.md')
+    # Read the template file directly
+    template_path = os.path.join(csv_dir, 'template.md')
     with open(template_path, 'r') as file:
         template_str = file.read()
 
@@ -18,13 +17,8 @@ def process_csv(csv_filename):
     template = Template(template_str)
 
     # Output directory for generated Markdown files
-    output_dir = os.path.join(script_dir, 'output')
+    output_dir = os.path.join(csv_dir, 'output')
     os.makedirs(output_dir, exist_ok=True)
-
-    # Delete existing files in the output directory
-    for root, dirs, files in os.walk(output_dir):
-        for file in files:
-            os.unlink(os.path.join(root, file))
 
     # Generate Markdown files
     with open(csv_filename, 'r', newline='') as csvfile:
@@ -37,6 +31,11 @@ def process_csv(csv_filename):
 
     print("Markdown files generated successfully.")
 
-    # Create a zip file containing the generated Markdown files
-    zip_file_path = shutil.make_archive(output_dir, 'zip', output_dir)
+    # Create a zip file containing only the generated Markdown files
+    zip_file_path = os.path.join(csv_dir, 'output.zip')
+    with zipfile.ZipFile(zip_file_path, 'w') as zipf:
+        for root, dirs, files in os.walk(output_dir):
+            for file in files:
+                zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), output_dir))
+
     return zip_file_path

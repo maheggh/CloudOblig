@@ -8,35 +8,34 @@
 </head>
 <body>
     <div class="styling">
-        <h1>Upload CSV</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="csvfile" accept=".csv">
-        <button type="submit">Upload</button>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="file" accept=".zip">
+            <button type="submit">Upload</button>
+        </form>
     </form>
     </div>
     
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            var csvFile = document.getElementById('csvFile').files[0];
-            var formData = new FormData();
-            formData.append('csv', csvFile);
-    
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.blob())
-            .then(blob => {
-                var url = window.URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = 'markdown_files.zip';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            });
-        });
+    document.getElementById('uploadForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    var file = document.getElementById('file').files[0];
+    var formData = new FormData();
+    formData.append('file', file);
+    fetch('/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'trauma.zip';  // Change the name of the downloaded zip file if needed
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
+});
     </script>
 </body>
 </html>
