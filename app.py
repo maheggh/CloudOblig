@@ -1,6 +1,6 @@
 #import the nesesary modules
 import os
-from flask import Flask, request, render_template, send_file, send_from_directory
+from flask import Flask, request, send_file, send_from_directory
 from csvhandling import process_csv
 import zipfile
 from werkzeug.utils import secure_filename

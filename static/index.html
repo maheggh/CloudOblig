@@ -11,7 +11,7 @@
        <h1>Upload a zip file</h1>
        <p>Make sure it includes one CSV and one Markdown file ~</p>
         <form class="uploadForm" enctype="multipart/form-data">
-            <input type="file" id="file" accept=".zip">
+            <input type="file"class="file" accept=".zip">
             <button type="submit">Upload</button>
         </form>
         <p class="fileReceivedMessage" style="display: none;">File received! it should appear here shortly:</p>
@@ -20,17 +20,17 @@
     
     <script>// Add an event listener to the uploadForm when it's submitted
         document.querySelector('.uploadForm').addEventListener('submit', function(event) {
-            // Prevent the default form submission behavior
+            // Prevent the default form sendt behavior
             event.preventDefault();
         
             // Get the uploaded file from the file input element
-            const file = document.querySelector('#file').files[0];
+            const file = document.querySelector('.file').files[0];
         
             // Create a new FormData object and append the uploaded file to it
             const formData = new FormData();
             formData.append('file', file);
         
-            // Send a POST request to the '/upload' endpoint of the server with the FormData containing the file
+            // POST the zipped file into uploads folder
             fetch('/upload', {
                 method: 'POST',
                 body: formData
@@ -52,7 +52,7 @@
         
                 // Append the download link to the downloadLink div
                 const downloadContainer = document.querySelector('#downloadLink');
-                downloadContainer.innerHTML = ''; // Clear previous content
+                downloadContainer.innerHTML = ''; // Clear previous content to prevent stacks
                 downloadContainer.appendChild(downloadLink);
             });
         });</script>
