@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Metadata for the document -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Zip File</title>
+    <!-- Link to the external stylesheet -->
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -17,29 +19,37 @@
         <div id="message"></div>
     </div>
     <script>
+        // Add event listener for the form submission event
         document.getElementById('uploadForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Prevent the default form submission
-            var formData = new FormData(this);
-            fetch('/upload-zip/', { // Make sure this matches your FastAPI endpoint
+            e.preventDefault(); 
+            
+            var formData = new FormData(this); // Gather form data for AJAX request
+            
+            // Send the form data to the FastAPI backend via fetch
+            fetch('/upload-zip/', { 
                 method: 'POST',
                 body: formData,
             })
-            .then(response => response.json())
+            .then(response => response.json()) // Parse the JSON response from the server
             .then(data => {
-                // Assuming the response includes file_id which is used to download the zip
+                // Get the file ID from the response and generate the download link
                 const fileID = data.file_id;
                 const downloadLink = `/download-zip/${fileID}`;
+                
+                // Update the message to the user and create a download link
                 document.getElementById('message').innerText = 'File processed successfully. Click the link to download your file.';
                 
-                // Create a new anchor element for downloading the file
+                // Create an anchor element for the download link
                 const downloadAnchor = document.createElement('a');
-                downloadAnchor.href = downloadLink;
-                downloadAnchor.innerText = 'Download Processed File';
+                downloadAnchor.href = downloadLink; // Set the href to the download URL
+                downloadAnchor.innerText = 'Download Processed File'; // Set the link text
+                // Append the download link to the message container
                 document.getElementById('message').appendChild(downloadAnchor);
             })
             .catch(error => {
+                // Handle any errors that occur during the fetch
                 document.getElementById('message').innerText = 'An error occurred.';
-                console.error('Error:', error);
+                console.error('Error:', error); // Log error to the console for debugging
             });
         });
     </script>
