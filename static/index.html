@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload CSV File</title>
+    <title>Upload Zip File</title>
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
     <div class="styling">
-        <h1>Upload CSV File</h1>
-        <form id="uploadForm" enctype="multipart/form-data" action="/upload-csv/" method="post">
-            <input type="file" name="file" accept=".csv">
+        <h1>Upload Zip File</h1>
+        <p>Upload a .zip file that contains a template.md and .csv file</p>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".zip">
             <button type="submit">Upload</button>
         </form>
         <div id="message"></div>
@@ -19,7 +20,7 @@
         document.getElementById('uploadForm').addEventListener('submit', function(e) {
             e.preventDefault(); // Prevent the default form submission
             var formData = new FormData(this);
-            fetch('/upload-csv/', {
+            fetch('/upload-zip/', { // Make sure this matches your FastAPI endpoint
                 method: 'POST',
                 body: formData,
             })
@@ -28,10 +29,13 @@
                 // Assuming the response includes file_id which is used to download the zip
                 const fileID = data.file_id;
                 const downloadLink = `/download-zip/${fileID}`;
-                document.getElementById('message').innerText = 'CSV processed successfully. Your download will start shortly.';
-    
-                // Automatically trigger the download
-                window.location.href = downloadLink; 
+                document.getElementById('message').innerText = 'File processed successfully. Click the link to download your file.';
+                
+                // Create a new anchor element for downloading the file
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.href = downloadLink;
+                downloadAnchor.innerText = 'Download Processed File';
+                document.getElementById('message').appendChild(downloadAnchor);
             })
             .catch(error => {
                 document.getElementById('message').innerText = 'An error occurred.';
