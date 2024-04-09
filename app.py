@@ -63,6 +63,15 @@ def upload():
     # Send the processed ZIP file as an attachment
     return send_file(output_zip_path, as_attachment=True)
 
+#URI available for GET method
+@app.route('/processed_file', methods=['GET'])
+def download_processed_file():
+    # Path to the processed file (output.zip)
+    processed_file_path = os.path.join(app.root_path, 'output.zip')
+    
+    # Return the processed file as an attachment
+    return send_file(processed_file_path, as_attachment=True)
+
 def extract_zip_files(zip_path):
     # Extract files from the zip archive to the upload folder
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
