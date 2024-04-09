@@ -97,7 +97,11 @@ async def upload_zip(file: UploadFile = File(...)):
 async def download_zip(file_id: str):
     zip_file_path = os.path.join(ZIP_FOLDER, f"{file_id}.zip")
     if os.path.exists(zip_file_path):
-        return FileResponse(zip_file_path, media_type='application/zip', filename=f"{file_id}.zip")
+        return FileResponse(
+            path=zip_file_path, 
+            media_type='application/zip', 
+            filename="output.zip"  # This sets the filename for the download
+        )
     raise HTTPException(status_code=404, detail="File not found")
 
 # Mount static files directory
