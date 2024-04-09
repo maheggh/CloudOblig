@@ -8,6 +8,7 @@
 </head>
 <body>
     <div class="styling">
+       <h1>I AM STATIC</h1>
         <form id="uploadForm" enctype="multipart/form-data">
             <input type="file" id="file" accept=".zip">
             <button type="submit">Upload</button>
@@ -30,7 +31,7 @@
         var url = window.URL.createObjectURL(blob);
         var a = document.createElement('a');
         a.href = url;
-        a.download = 'trauma.zip';  // Change the name of the downloaded zip file if needed
+        a.download = 'trauma.zip'; 
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
