@@ -8,35 +8,53 @@
 </head>
 <body>
     <div class="styling">
-       <h1>I AM STATIC</h1>
-        <form id="uploadForm" enctype="multipart/form-data">
+       <h1>Upload a zip file</h1>
+       <p>Make sure it includes one CSV and one Markdown file ~</p>
+        <form class="uploadForm" enctype="multipart/form-data">
             <input type="file" id="file" accept=".zip">
             <button type="submit">Upload</button>
         </form>
-    </form>
+        <p class="fileReceivedMessage" style="display: none;">File received! it should appear here shortly:</p>
+        <div id="downloadLink"></div>
     </div>
     
-    <script>
-    document.getElementById('uploadForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    var file = document.getElementById('file').files[0];
-    var formData = new FormData();
-    formData.append('file', file);
-    fetch('/upload', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.blob())
-    .then(blob => {
-        var url = window.URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = 'trauma.zip'; 
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    });
-});
-    </script>
-</body>
+    <script>// Add an event listener to the uploadForm when it's submitted
+        document.querySelector('.uploadForm').addEventListener('submit', function(event) {
+            // Prevent the default form submission behavior
+            event.preventDefault();
+        
+            // Get the uploaded file from the file input element
+            const file = document.querySelector('#file').files[0];
+        
+            // Create a new FormData object and append the uploaded file to it
+            const formData = new FormData();
+            formData.append('file', file);
+        
+            // Send a POST request to the '/upload' endpoint of the server with the FormData containing the file
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            // Once the response is received, parse it as a blob
+            .then(response => response.blob())
+            .then(blob => {
+                // Show the file received message
+                document.querySelector('.fileReceivedMessage').style.display = 'block';
+        
+                // Create a URL for the blob object
+                const url = window.URL.createObjectURL(blob);
+        
+                // Create a new anchor element for downloading the file
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = 'output.zip';
+                downloadLink.textContent = 'Download Processed File';
+        
+                // Append the download link to the downloadLink div
+                const downloadContainer = document.querySelector('#downloadLink');
+                downloadContainer.innerHTML = ''; // Clear previous content
+                downloadContainer.appendChild(downloadLink);
+            });
+        });</script>
+    </body>
 </html>
