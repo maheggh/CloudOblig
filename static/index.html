@@ -3,58 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <title>Upload CSV File</title>
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
     <div class="styling">
-       <h1>Upload a zip file</h1>
-       <p>Make sure it includes one CSV and one Markdown file ~</p>
-        <form class="uploadForm" enctype="multipart/form-data">
-            <input type="file"class="file" accept=".zip">
+        <h1>Upload CSV File</h1>
+        <form id="uploadForm" enctype="multipart/form-data" action="/upload-csv/" method="post">
+            <input type="file" name="file" accept=".csv">
             <button type="submit">Upload</button>
         </form>
-        <p class="fileReceivedMessage" style="display: none;">File received! it should appear here shortly:</p>
-        <div id="downloadLink"></div>
+        <div id="message"></div>
     </div>
-    
-    <script>// Add an event listener to the uploadForm when it's submitted
-        document.querySelector('.uploadForm').addEventListener('submit', function(event) {
-            // Prevent the default form sendt behavior
-            event.preventDefault();
-        
-            // Get the uploaded file from the file input element
-            const file = document.querySelector('.file').files[0];
-        
-            // Create a new FormData object and append the uploaded file to it
-            const formData = new FormData();
-            formData.append('file', file);
-        
-            // POST the zipped file into uploads folder
-            fetch('/upload', {
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            var formData = new FormData(this);
+            fetch('/upload-csv/', {
                 method: 'POST',
-                body: formData
+                body: formData,
             })
-            // Once the response is received, parse it as a blob
-            .then(response => response.blob())
-            .then(blob => {
-                // Show the file received message
-                document.querySelector('.fileReceivedMessage').style.display = 'block';
-        
-                // Create a URL for the blob object
-                const url = window.URL.createObjectURL(blob);
-        
-                // Create a new anchor element for downloading the file
-                const downloadLink = document.createElement('a');
-                downloadLink.href = url;
-                downloadLink.download = 'output.zip';
-                downloadLink.textContent = 'Download Processed File';
-        
-                // Append the download link to the downloadLink div
-                const downloadContainer = document.querySelector('#downloadLink');
-                downloadContainer.innerHTML = ''; // Clear previous content to prevent stacks
-                downloadContainer.appendChild(downloadLink);
+            .then(response => response.json())
+            .then(data => {
+                // Assuming the response includes file_id which is used to download the zip
+                const fileID = data.file_id;
+                const downloadLink = `/download-zip/${fileID}`;
+                document.getElementById('message').innerText = 'CSV processed successfully. Your download will start shortly.';
+    
+                // Automatically trigger the download
+                window.location.href = downloadLink; 
+            })
+            .catch(error => {
+                document.getElementById('message').innerText = 'An error occurred.';
+                console.error('Error:', error);
             });
-        });</script>
-    </body>
+        });
+    </script>
+</body>
 </html>
